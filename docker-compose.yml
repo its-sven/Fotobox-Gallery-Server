@@ -1,0 +1,20 @@
+services:
+  fotobox:
+    build: .
+    container_name: fotobox-gallery
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      PORT: 3000
+      DATA_ROOT: /opt/fotobox
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      SITE_EYEBROW: ${SITE_EYEBROW:-Fotobox}
+      SITE_TITLE: ${SITE_TITLE:-Fotobox Galerie}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
+      CREDIT_NAME: ${CREDIT_NAME:-Sven Würth}
+      CREDIT_URL: ${CREDIT_URL:-https://svenw.de}
+    volumes:
+      - /opt/fotobox:/opt/fotobox
