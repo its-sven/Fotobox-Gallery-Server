@@ -1,21 +1,26 @@
 services:
   fotobox:
     build: .
+    image: fotobox-gallery:latest
     container_name: fotobox-gallery
     restart: unless-stopped
-    user: "${PUID}:${PGID}"
+    # Kein "user:" setzen – der Container setzt die Rechte selbst und läuft dann als PUID:PGID.
     ports:
       - "3000:3000"
     environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Europe/Berlin}
       PORT: 3000
       DATA_ROOT: /opt/fotobox
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
       SITE_EYEBROW: ${SITE_EYEBROW:-Fotobox}
       SITE_TITLE: ${SITE_TITLE:-Fotobox Galerie}
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
-      CREDIT_NAME: ${CREDIT_NAME:-Sven Würth}
-      CREDIT_URL: ${CREDIT_URL:-https://svenw.de}
+      CREDIT_NAME: ${CREDIT_NAME-Sven Würth}
+      CREDIT_URL: ${CREDIT_URL-https://svenw.de}
+      PREGENERATE: ${PREGENERATE:-true}
     volumes:
-      - /opt/fotobox:/opt/fotobox
+      - ${DATA_PATH:-/opt/fotobox}:/opt/fotobox
