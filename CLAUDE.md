@@ -7,7 +7,7 @@ Selbst gehostete Foto-Galerie für Fotobox-Events. Die Fotobox synchronisiert Bi
 - Node ≥ 22, **ESM** (`"type": "module"`), **Express 5** (async-Fehler landen automatisch im Error-Handler – kein Wrapper nötig).
 - Kein Build-Schritt, kein Frontend-Framework. HTML wird serverseitig per Tagged Template `html\`…\`` erzeugt; Client-JS/CSS liegen als echte Dateien in `public/` (ausgeliefert unter `/assets`).
 - Abhängigkeiten: `express`, `express-session` (eigener Speicher-Store), `bcryptjs` (PIN-Hashes), `sharp` (Vorschaubilder), `yazl` (ZIP-Stream), `multer` (Favicon-Upload), `qrcode`.
-- Docker: `node:24-alpine`, `npm ci` mit `package-lock.json`, Entrypoint `docker-entrypoint.sh` (startet als root, korrigiert Rechte, wechselt per `su-exec` auf `PUID:PGID`).
+- Docker: `node:24-alpine`, fertiges Image auf `ghcr.io/its-sven/fotobox-gallery-server` (docker-compose.yml nutzt es; `build: .` ist auskommentiert), `npm ci` mit `package-lock.json`, Entrypoint `docker-entrypoint.sh` (startet als root, korrigiert Rechte, wechselt per `su-exec` auf `PUID:PGID`).
 
 ## Struktur
 
@@ -30,7 +30,10 @@ public/js/slug.js         slugify/finalSlug/slugProblem – wird von Browser UND
 public/js/gallery.js      Galerie-Client (Polling, Kacheln, Lightbox, Teilen)
 public/js/admin.js        Admin-Client (URL-Name live prüfen, PIN-Toggle, Kopieren, data-confirm, Löschen per fetch)
 public/js/latest.js       Auto-Reload der „Neuestes Bild“-Seite
-scripts/                  gen-test-photos.js, smoke-test.sh
+public/img/               logo.svg (Quelle), favicon.png + apple-touch-icon.png (generiert)
+scripts/                  gen-test-photos.js, smoke-test.sh, build-icons.js (npm run icons)
+docs/                     logo.png + screenshots/ für die README
+.github/workflows/        ci.yml (check + Smoke-Test), docker.yml (Image → ghcr.io, amd64+arm64)
 ```
 
 ## Daten
@@ -47,6 +50,7 @@ DATA_ROOT (/opt/fotobox)
 - Immer über `store.js` lesen/schreiben (`loadEvents`, `findEvent`, `createEvent`, `updateEvent`, `loadSettings`, `saveSettings`). Neue Event-Felder in `normalize()` mit Default versehen (Altbestand!).
 - `listPhotos(e)` ist gecacht (10 s / Ordner-mtime) und liefert eine **geteilte** Liste – nicht verändern.
 - Cache-Dateinamen hängen an Name+Größe+mtime; der Hintergrund-Scan (`startBackgroundWork`) erzeugt fehlende Varianten mit niedriger Priorität und löscht verwaiste.
+- „Neu“ (gallery.js): Foto-mtime jünger als 10 Min. (gegen Serverzeit aus dem `Date`-Header von `/api/.../photos`) **oder** während des Besuchs neu aufgetaucht. `seen` wird aus der kompletten Liste gepflegt, nicht aus den gerenderten Kacheln.
 
 ## Konventionen
 
@@ -71,10 +75,18 @@ DATA_ROOT (/opt/fotobox)
 
 ```bash
 npm run check                                               # Syntax aller Dateien
-npm run dev                                                 # http://localhost:3000, Passwort "dev", Daten ./data
+npm run dev                                                 # http://localhost:3001, Passwort "dev", Daten ./data
 node scripts/gen-test-photos.js data/events/<slug> 100
-scripts/smoke-test.sh http://localhost:3000 dev ./data      # 48 Checks, braucht frische Daten (rm -rf data)
+scripts/smoke-test.sh http://localhost:3001 dev ./data      # 48 Checks, braucht frische Daten (rm -rf data)
 CONTAINER=<name> scripts/smoke-test.sh http://localhost:<port> <pw>   # gegen einen Test-Container
 ```
 
 Bei UI-Änderungen zusätzlich im Browser prüfen: Desktop + 375 px, Hell + Dunkel, keine horizontale Scrollbar (`document.documentElement.scrollWidth`).
+
+Port 3000 ist für den Docker-Container reserviert, der Dev-Server nutzt 3001.
+
+## Release
+
+1. Version in `package.json` erhöhen, `npm install --package-lock-only`, Eintrag in `CHANGELOG.md`.
+2. Nach dem Merge in `main` Tag setzen: `git tag v2.x.y && git push origin v2.x.y` → GitHub Actions baut `ghcr.io/its-sven/fotobox-gallery-server` mit den Tags `2.x.y`, `2.x`, `2` (Push auf `main` aktualisiert `latest`).
+3. Screenshots in `docs/screenshots/` bei sichtbaren UI-Änderungen neu aufnehmen.

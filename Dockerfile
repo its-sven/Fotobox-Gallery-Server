@@ -1,5 +1,10 @@
 FROM node:24-alpine
 
+LABEL org.opencontainers.image.title="Fotobox Galerie" \
+      org.opencontainers.image.description="Selbst gehostete Foto-Galerie für Fotobox-Events" \
+      org.opencontainers.image.source="https://github.com/its-sven/Fotobox-Gallery-Server" \
+      org.opencontainers.image.licenses="MIT"
+
 RUN apk add --no-cache su-exec
 WORKDIR /app
 

@@ -3,6 +3,7 @@ const { slug, pageSize } = JSON.parse(document.getElementById('page-data').textC
 const $ = (id) => document.getElementById(id);
 const enc = encodeURIComponent;
 const POLL_MS = 15000;
+const NEW_MS = 10 * 60_000; // so lange gilt ein Foto als „Neu“
 
 const els = {
   gallery: $('gallery'), count: $('count'), sort: $('sort'), refresh: $('refresh'), empty: $('empty'),
@@ -15,8 +16,14 @@ let signature = '';
 let shown = 0;
 let current = null; // Dateiname des Fotos in der Lightbox
 let firstLoad = true;
+let clockOffset = 0; // Serverzeit minus Gerätezeit (falsch gestellte Handy-Uhren ausgleichen)
 const tiles = new Map();
-const known = new Set();
+const seen = new Set();     // alle bisher bekannten Dateinamen
+const arrived = new Map();  // Dateiname → Serverzeit, zu der das Foto während des Besuchs dazukam
+
+// „Neu“ = in den letzten 10 Minuten aufgenommen/hochgeladen oder während des Besuchs dazugekommen
+const serverNow = () => Date.now() + clockOffset;
+const isNew = (p) => serverNow() - Math.max(p.v, arrived.get(p.name) || 0) < NEW_MS;
 
 const keyOf = (p) => `${p.name}@${p.v}`;
 const urlOf = (kind, p) => `/${kind}/${enc(slug)}/${enc(p.name)}?v=${p.v}`;
@@ -29,9 +36,16 @@ async function load() {
     const res = await fetch(`/api/${enc(slug)}/photos`, { cache: 'no-cache' });
     if (res.status === 401) return location.reload();
     if (!res.ok) return;
+    // Serverzeit aus dem Date-Header (bleibt im JSON außen vor, damit unveränderte Listen als 304 kommen)
+    const serverDate = Date.parse(res.headers.get('Date'));
+    if (serverDate) clockOffset = serverDate - Date.now();
     const list = (await res.json()).photos || [];
+    for (const p of list) {
+      if (!firstLoad && !seen.has(p.name)) arrived.set(p.name, serverNow());
+      seen.add(p.name);
+    }
     const sig = list.map(keyOf).join('|');
-    if (sig === signature) return;
+    if (sig === signature) return updateBadges();
     signature = sig;
     photos = list;
     sortPhotos();
@@ -50,7 +64,10 @@ function sortPhotos() {
 function tile(p) {
   const key = keyOf(p);
   let el = tiles.get(key);
-  if (el) return el;
+  if (el) {
+    el.classList.toggle('is-new', isNew(p));
+    return el;
+  }
   el = document.createElement('button');
   el.type = 'button';
   el.className = 'tile';
@@ -62,8 +79,7 @@ function tile(p) {
   img.addEventListener('load', () => img.classList.add('is-loaded'), { once: true });
   img.src = urlOf('thumb', p);
   el.append(img);
-  if (!firstLoad && !known.has(p.name)) el.classList.add('is-new');
-  known.add(p.name);
+  el.classList.toggle('is-new', isNew(p));
   el.addEventListener('click', () => open(indexOf(p.name)));
   tiles.set(key, el);
   return el;
@@ -98,6 +114,22 @@ function updateMore() {
   if (!observer) return;
   observer.unobserve(els.more);
   if (!els.more.hidden) observer.observe(els.more);
+}
+
+// Rückfallebene, falls der Observer nicht feuert (z. B. in eingebetteten Ansichten)
+let scrollTicking = false;
+window.addEventListener('scroll', () => {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(() => {
+    scrollTicking = false;
+    if (!els.more.hidden && els.more.getBoundingClientRect().top < innerHeight + 1200) loadMore();
+  });
+}, { passive: true });
+
+/** „Neu“-Markierung der sichtbaren Kacheln aktualisieren (läuft nach 10 Minuten ab). */
+function updateBadges() {
+  for (const p of photos.slice(0, shown)) tiles.get(keyOf(p))?.classList.toggle('is-new', isNew(p));
 }
 
 // ---------- Lightbox ----------
@@ -154,7 +186,7 @@ $('lb-next').addEventListener('click', () => step(1));
 $('lb-close').addEventListener('click', () => els.lightbox.close());
 els.share.addEventListener('click', share);
 els.lightbox.addEventListener('close', () => { current = null; els.img.removeAttribute('src'); });
-els.lightbox.addEventListener('click', (e) => { if (e.target === els.lightbox || e.target === els.stage) els.lightbox.close(); });
+// Bewusst kein Schließen per Klick neben das Bild: dort liegen die Blätter-Flächen. Schließen über × oder Esc.
 document.addEventListener('keydown', (e) => {
   if (!els.lightbox.open) return;
   if (e.key === 'ArrowLeft') step(-1);

@@ -1,84 +1,120 @@
-# Fotobox Galerie
+<p align="center">
+  <img src="docs/logo.png" width="112" alt="Fotobox Galerie Logo">
+</p>
 
-Selbst gehostete Foto-Galerie für Fotobox-Events. Die Fotobox legt ihre Bilder per Sync in einen Ordner auf dem Server, die Gäste sehen sie live im Browser – optional mit PIN-Schutz.
+<h1 align="center">Fotobox Galerie</h1>
 
-**Funktionen**
+<p align="center">
+  Selbst gehostete Foto-Galerie für Fotobox-Events.<br>
+  Die Fotobox legt ihre Bilder in einen Ordner – die Gäste sehen sie Sekunden später live auf dem Handy.
+</p>
 
-- Galerie pro Event unter einer eigenen Adresse, z. B. `https://fotos.example.com/Sommerfest-2026`
-- Optionaler PIN, optional „Neuestes Bild öffentlich“ (z. B. für einen Bildschirm vor Ort)
-- Schnelle Galerie: kleine Vorschaubilder (WebP), Nachladen beim Scrollen, Live-Aktualisierung alle 15 s mit „Neu“-Markierung
-- Vollbildansicht mit Wischen/Pfeiltasten, Download des Originals, Teilen auf dem Handy, „Alle herunterladen“ als ZIP
-- Adminbereich: Galerien anlegen/bearbeiten/archivieren, Bilder löschen, QR-Code zum Ausdrucken, Seitentitel und Favicon
-- Helles und dunkles Design (folgt der Einstellung des Geräts)
+<p align="center">
+  <a href="https://github.com/its-sven/Fotobox-Gallery-Server/actions/workflows/ci.yml"><img src="https://github.com/its-sven/Fotobox-Gallery-Server/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/its-sven/Fotobox-Gallery-Server/actions/workflows/docker.yml"><img src="https://github.com/its-sven/Fotobox-Gallery-Server/actions/workflows/docker.yml/badge.svg" alt="Docker-Image"></a>
+  <a href="https://github.com/its-sven/Fotobox-Gallery-Server/pkgs/container/fotobox-gallery-server"><img src="https://img.shields.io/badge/ghcr.io-fotobox--gallery--server-0f172a?logo=docker&logoColor=white" alt="Container Registry"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Lizenz-MIT-f59e0b" alt="MIT-Lizenz"></a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/gallery-dark.jpg" alt="Galerie-Ansicht für Gäste" width="900">
+</p>
 
 ---
 
-## Installation auf einem Linux-Server (Docker)
+## Inhalt
 
-### 0. Voraussetzungen
+- [Funktionen](#funktionen)
+- [Screenshots](#screenshots)
+- [Schnellstart mit einem Befehl](#schnellstart-mit-einem-befehl)
+- [Installation mit Docker Compose](#installation-mit-docker-compose-empfohlen)
+- [Betriebsbeispiele](#betriebsbeispiele)
+- [Erste Galerie anlegen & Fotobox anbinden](#erste-galerie-anlegen--fotobox-anbinden)
+- [Konfiguration](#konfiguration)
+- [Update & Backup](#update--backup)
+- [So funktioniert es](#so-funktioniert-es)
+- [Fehlerbehebung](#fehlerbehebung)
+- [Entwicklung](#entwicklung)
 
-- Linux-Server mit **Docker** und **Docker Compose** (Plugin `docker compose`)
-  ```bash
-  curl -fsSL https://get.docker.com | sudo sh
-  ```
-- Ein Reverse Proxy mit HTTPS davor (z. B. Caddy, Nginx Proxy Manager, Traefik)
+## Funktionen
 
-### 1. Alte Installation entfernen (nur falls vorhanden)
+**Für Gäste**
+- Eigene Adresse pro Event, z. B. `https://fotos.example.com/Sommerfest-2026` – auf Wunsch mit PIN
+- Schnelle Galerie mit kleinen Vorschaubildern, Nachladen beim Scrollen und Live-Aktualisierung alle 15 Sekunden
+- „Neu“-Markierung für Fotos der letzten 10 Minuten
+- Vollbildansicht mit Wischen, Pfeiltasten und großen Blätter-Flächen; Download des Originals, Teilen direkt vom Handy
+- „Alle herunterladen“ als ZIP (pro Galerie abschaltbar)
+- Optional „Neuestes Bild öffentlich“ – ideal für einen Bildschirm vor Ort
+- Helles und dunkles Design, passt sich dem Gerät an
+
+**Für dich als Betreiber**
+- Adminbereich: Galerien anlegen, bearbeiten, archivieren; Bilder löschen
+- QR-Code pro Galerie (PNG zum Drucken, SVG)
+- URL-Namen werden beim Tippen geprüft und automatisch bereinigt
+- Vorschaubilder werden im Hintergrund erzeugt, sobald Fotos ankommen
+- Läuft als Docker-Container (amd64 & arm64, also auch auf dem Raspberry Pi), ohne root, mit Healthcheck
+- Keine Datenbank: alles liegt als Dateien in einem Ordner
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/gallery-light.jpg" alt="Galerie im hellen Design"><br><sub>Galerie im hellen Design</sub></td>
+    <td width="50%"><img src="docs/screenshots/lightbox.jpg" alt="Vollbildansicht"><br><sub>Vollbildansicht mit Blättern, Download und Teilen</sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/mobile.png" alt="Galerie, neuestes Bild und PIN-Abfrage auf dem Handy" width="760"><br>
+  <sub>Auf dem Handy: Galerie mit „Neu“-Markierung · öffentliches neuestes Bild · PIN-Abfrage</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/admin-create.png" alt="Neue Galerie anlegen"><br><sub>Neue Galerie – der URL-Name wird live geprüft und bereinigt</sub></td>
+    <td width="50%"><img src="docs/screenshots/admin-events.png" alt="Galerie-Übersicht im Admin"><br><sub>Übersicht mit Status, Fotoanzahl und Link zum Kopieren</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/admin-qr.png" alt="QR-Code einer Galerie"><br><sub>QR-Code zum Ausdrucken</sub></td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Schnellstart mit einem Befehl
+
+Voraussetzung: [Docker](https://docs.docker.com/engine/install/) ist installiert.
 
 ```bash
-cd /opt/fotobox-gallery-server         # bzw. dein bisheriger Ordner mit der docker-compose.yml
-sudo docker compose down
-sudo docker image rm fotobox-gallery-server-fotobox fotobox-gallery 2>/dev/null
-cd / && sudo rm -rf /opt/fotobox-gallery-server
+docker run -d --name fotobox-gallery --restart unless-stopped \
+  -p 3000:3000 \
+  -v /opt/fotobox:/opt/fotobox \
+  -e ADMIN_PASSWORD='MeinSicheresPasswort' \
+  -e SESSION_SECRET="$(openssl rand -hex 32)" \
+  -e COOKIE_SECURE=false \
+  ghcr.io/its-sven/fotobox-gallery-server:latest
 ```
 
-Die **Fotos und Einstellungen in `/opt/fotobox` bleiben dabei erhalten** und werden von der neuen Version übernommen. Nur wenn wirklich alles weg soll (alle Galerien und Fotos!):
+Danach `http://<server-ip>:3000/Admin` öffnen und mit dem Passwort einloggen.
+
+> `COOKIE_SECURE=false` ist nur nötig, solange die Seite ohne HTTPS läuft. Hinter einem Reverse Proxy mit HTTPS weglassen.
+
+## Installation mit Docker Compose (empfohlen)
+
+So lässt sich die Konfiguration bequem in einer `.env`-Datei pflegen. Das Repository muss dafür **nicht** geklont werden.
 
 ```bash
-sudo rm -rf /opt/fotobox
-```
-
-### 2. Code holen
-
-```bash
-sudo git clone https://github.com/its-sven/Fotobox-Gallery-Server /opt/fotobox-gallery-server
-cd /opt/fotobox-gallery-server
-```
-
-### 3. Konfiguration anlegen
-
-```bash
-sudo cp .env.example .env
+sudo mkdir -p /opt/fotobox-gallery && cd /opt/fotobox-gallery
+sudo curl -fsSLO https://raw.githubusercontent.com/its-sven/Fotobox-Gallery-Server/main/docker-compose.yml
+sudo curl -fsSL -o .env https://raw.githubusercontent.com/its-sven/Fotobox-Gallery-Server/main/.env.example
 sudo sed -i "s/^SESSION_SECRET=.*/SESSION_SECRET=$(openssl rand -hex 32)/" .env
-sudo nano .env
+sudo nano .env            # mindestens ADMIN_PASSWORD setzen
+sudo docker compose up -d
+sudo docker compose ps    # nach ~15 s: "healthy"
 ```
 
-In der `.env` mindestens setzen:
+Den Datenordner (`/opt/fotobox`) legt der Container selbst an und setzt die Rechte passend – kein `chown` nötig.
 
-| Eintrag | Bedeutung |
-|---|---|
-| `ADMIN_PASSWORD` | Passwort für `/Admin`. Solange hier der Beispielwert steht, bleibt der Admin gesperrt. |
-| `SESSION_SECRET` | Wurde oben schon zufällig erzeugt. |
-| `PUID` / `PGID` | Benutzer, als der die App läuft. Am besten der Benutzer, mit dem die Fotobox die Bilder hochlädt (`id -u fotobox`, `id -g fotobox`). Lädt die Fotobox als root hoch, passt der Standard `1000`. |
-| `PUBLIC_BASE_URL` | Optional, z. B. `https://fotos.example.com` – wird für Links und QR-Codes genutzt. Leer = aktuell aufgerufene Domain. |
-
-Alle Einträge sind in der `.env.example` kommentiert.
-
-### 4. Starten
-
-```bash
-sudo docker compose up -d --build
-sudo docker compose ps          # Status muss nach ~15 s "healthy" sein
-sudo docker compose logs -f     # Ctrl+C zum Beenden
-```
-
-Im Log sollte stehen: `Fotobox Galerie läuft auf Port 3000 …`
-
-Den Datenordner (`/opt/fotobox` mit `config/`, `events/`, `cache/`) legt der Container selbst an und setzt die Rechte passend für `PUID:PGID`. Du musst dafür **nichts** mit `chown` machen.
-
-### 5. Reverse Proxy
-
-Der Container lauscht auf Port `3000`. Beispiel für Caddy:
+**Reverse Proxy (HTTPS).** Der Container lauscht auf Port 3000. Beispiel für [Caddy](https://caddyserver.com):
 
 ```caddyfile
 fotos.example.com {
@@ -87,95 +123,204 @@ fotos.example.com {
 }
 ```
 
-Läuft die Seite **ohne HTTPS** (nur im lokalen Netz), in der `.env` `COOKIE_SECURE=false` setzen – sonst funktionieren Login und PIN nicht.
+Nginx Proxy Manager, Traefik & Co. funktionieren genauso. Wichtig ist nur, dass der Proxy `X-Forwarded-Proto` setzt (machen alle gängigen Proxys automatisch).
 
-### 6. Erste Galerie anlegen
+<details>
+<summary>Alte Installation (vor Version 2) entfernen</summary>
 
-1. `https://fotos.example.com/Admin` öffnen und mit dem `ADMIN_PASSWORD` einloggen
-2. Unter **Neue Galerie** Anzeigename, URL-Name und PIN eintragen → **Galerie anlegen**
-3. Der Link und ein **QR-Code** (PNG zum Drucken) stehen direkt bereit
+```bash
+cd /opt/fotobox-gallery-server          # Ordner der alten Installation
+sudo docker compose down
+sudo docker image rm fotobox-gallery-server-fotobox 2>/dev/null
+```
 
-### 7. Fotobox anbinden
+Fotos und Einstellungen in `/opt/fotobox` bleiben erhalten und werden übernommen. In der alten `docker-compose.yml` stand `user: …` – die neue Version braucht das nicht mehr.
+</details>
 
-Die Fotobox (bzw. dein Sync-Tool) muss die Bilder in den Ordner der Galerie schreiben:
+## Betriebsbeispiele
+
+Die Galerie braucht nur einen Ordner, in dem die Fotos landen. Wie die Fotos dorthin kommen und wie die Gäste zugreifen, ist frei wählbar. Zwei bewährte Varianten:
+
+### A) Online-Server – Fotobox per LTE angebunden
+
+So läuft es bei mir: Die Galerie läuft auf einem Server im Internet unter einer eigenen Domain. Die Fotobox vor Ort ist über einen LTE-Router online und per [Netbird](https://netbird.io) (WireGuard-VPN) mit dem Server verbunden. [Syncthing](https://syncthing.net) spiegelt den Foto-Ordner der Fotobox nach `/opt/fotobox` auf dem Server.
+
+```mermaid
+flowchart LR
+    subgraph event["📍 Vor Ort"]
+        direction TB
+        box["📷 Fotobox<br/>Kamera + PC"]
+        stA["Syncthing<br/>Foto-Ordner der Fotobox"]
+        lte["📶 LTE-Router"]
+        box --> stA
+        stA -.- lte
+    end
+
+    subgraph server["☁️ Server im Internet"]
+        direction TB
+        stB["Syncthing<br/>/opt/fotobox/events/Sommerfest-2026"]
+        app["🐳 Fotobox Galerie<br/>Docker-Container :3000"]
+        proxy["🔒 Reverse Proxy<br/>HTTPS · fotos.example.com"]
+        stB --> app --> proxy
+    end
+
+    guests["📱 Gäste<br/>QR-Code scannen"]
+
+    stA == "Netbird-VPN über LTE" ==> stB
+    guests -- "mobiles Internet" --> proxy
+```
+
+- **Vorteile:** Gäste brauchen kein WLAN, die Galerie bleibt nach dem Event online, keine Portfreigaben am LTE-Router nötig (Netbird verbindet auch hinter CGNAT).
+- **Ablauf:** Event im Admin anlegen → Syncthing-Ordner auf dem Server auf `/opt/fotobox/events/<URL-Name>` zeigen lassen → Fotobox speichert in ihren Ordner, Syncthing überträgt, die Galerie zeigt die Fotos nach spätestens 15 Sekunden.
+- **Tipp:** `PUID`/`PGID` auf den Benutzer setzen, unter dem Syncthing auf dem Server läuft (`id -u syncthing`). Dann gehören die Fotos und die App demselben Benutzer, und das Löschen im Admin funktioniert reibungslos.
+
+### B) Komplett vor Ort – ohne Internet
+
+Die Galerie läuft direkt auf dem Fotobox-PC oder auf einem Mini-PC bzw. Raspberry Pi daneben. Die Gäste verbinden sich mit dem WLAN vor Ort und öffnen die Galerie über die lokale Adresse.
+
+```mermaid
+flowchart LR
+    subgraph event["📍 Vor Ort – kein Internet nötig"]
+        direction LR
+        box["📷 Fotobox-PC<br/>speichert Fotos"]
+        folder[("Foto-Ordner<br/>…/events/Sommerfest-2026")]
+        app["🐳 Fotobox Galerie<br/>Docker auf demselben PC<br/>oder Mini-PC / Raspberry Pi"]
+        wifi["📶 WLAN-Router"]
+        guests["📱 Gäste im WLAN<br/>http://192.168.1.10:3000"]
+        tv["📺 Bildschirm<br/>„Neuestes Bild“"]
+        box --> folder --> app
+        app --- wifi
+        guests --> wifi
+        tv --> wifi
+    end
+```
+
+- **Einstellungen:** `COOKIE_SECURE=false` (kein HTTPS im lokalen Netz) und `PUBLIC_BASE_URL=http://192.168.1.10:3000`, damit Links und QR-Codes die lokale Adresse enthalten. Am Router dem Gerät eine feste IP geben.
+- **Bildschirm vor Ort:** Bei der Galerie „Neuestes Bild öffentlich“ einschalten und die Galerie-Adresse auf einem Fernseher oder Tablet öffnen – das neueste Foto aktualisiert sich automatisch.
+- **Gleicher PC wie die Fotobox-Software:** In der `.env` `DATA_PATH` auf einen Ordner setzen und die Fotobox-Software direkt nach `<DATA_PATH>/events/<URL-Name>` speichern lassen.
+
+> Weitere Wege funktionieren genauso: Upload per SFTP/FTP, `rsync`, Nextcloud-Sync … – Hauptsache, die Dateien landen in `events/<URL-Name>/`.
+
+## Erste Galerie anlegen & Fotobox anbinden
+
+1. `/Admin` öffnen und mit dem `ADMIN_PASSWORD` einloggen.
+2. Unter **Neue Galerie** Anzeigename, URL-Name und optional einen PIN eintragen → **Galerie anlegen**.
+3. Link oder **QR-Code** an die Gäste weitergeben (bei PIN-Schutz den PIN nicht vergessen).
+4. Die Fotobox bzw. das Sync-Tool schreibt die Bilder in den Ordner der Galerie:
 
 ```text
 /opt/fotobox/events/<URL-Name>/        z. B. /opt/fotobox/events/Sommerfest-2026/
 ```
 
-Unterstützt: JPG, PNG, WebP, GIF, AVIF, BMP. Unterordner und versteckte Dateien (`.xyz`, `._IMG.jpg`) werden ignoriert. Neue Fotos erscheinen nach spätestens 15 Sekunden bei allen Gästen.
+**Regeln für den URL-Namen:** erlaubt sind `A–Z`, `a–z`, `0–9`, `-` und `_` (2–80 Zeichen). Leerzeichen und Punkte werden beim Tippen zu `-`, Umlaute zu `ae/oe/ue/ss`, alles andere wird entfernt. Vergebene und reservierte Namen (`Admin`, `api`, …) werden sofort markiert. Groß-/Kleinschreibung spielt beim Aufruf keine Rolle.
 
----
+**Unterstützte Formate:** JPG, PNG, WebP, GIF, AVIF, BMP. Unterordner und versteckte Dateien werden ignoriert.
 
-## Update
+## Konfiguration
 
-```bash
-cd /opt/fotobox-gallery-server
-sudo git pull
-sudo docker compose up -d --build
+Alle Einstellungen kommen aus Umgebungsvariablen (bei Compose aus der `.env`):
+
+| Variable | Standard | Bedeutung |
+|---|---|---|
+| `ADMIN_PASSWORD` | – | Passwort für `/Admin`. **Pflicht** – ohne eigenes Passwort bleibt der Admin gesperrt. |
+| `SESSION_SECRET` | zufällig | Lange Zufallszeichenfolge (`openssl rand -hex 32`). |
+| `PUID` / `PGID` | `1000` | Benutzer/Gruppe, als die die App läuft. Am besten der Benutzer, der die Fotos hochlädt. |
+| `DATA_PATH` | `/opt/fotobox` | Datenordner auf dem Host (nur Compose). |
+| `PORT` | `3000` | Port auf dem Host (nur Compose). |
+| `COOKIE_SECURE` | `true` | Auf `false` setzen, wenn die Seite ohne HTTPS läuft. |
+| `PUBLIC_BASE_URL` | – | Feste Adresse für Links und QR-Codes, z. B. `https://fotos.example.com`. Leer = aufgerufene Adresse. |
+| `TZ` | `Europe/Berlin` | Zeitzone für Datumsangaben. |
+| `SITE_EYEBROW` / `SITE_TITLE` | `Fotobox` / `Fotobox Galerie` | Startwerte für die Überschriften (später im Admin änderbar). |
+| `CREDIT_NAME` / `CREDIT_URL` | Sven Würth | Hinweis in der Fußzeile. Leer setzen, um ihn auszublenden. |
+| `PREGENERATE` | `true` | Vorschaubilder im Hintergrund erzeugen, sobald neue Fotos ankommen. |
+
+**Ordnerstruktur**
+
+```text
+/opt/fotobox/
+├── config/     Galerien, PIN-Hashes, Einstellungen, eigenes Favicon
+├── events/     Originalfotos – ein Unterordner pro Galerie
+└── cache/      Vorschaubilder (wird automatisch verwaltet, darf gelöscht werden)
 ```
 
-## Backup
+## Update & Backup
 
-Wichtig sind nur `/opt/fotobox/config` (Galerien, PINs, Einstellungen) und `/opt/fotobox/events` (Fotos). `/opt/fotobox/cache` enthält nur Vorschaubilder und kann jederzeit gelöscht werden.
+```bash
+cd /opt/fotobox-gallery
+sudo docker compose pull && sudo docker compose up -d
+```
+
+Wichtig für ein Backup sind nur `config/` und `events/`:
 
 ```bash
 sudo tar czf fotobox-backup-$(date +%F).tar.gz -C /opt fotobox/config fotobox/events
 ```
 
----
+Feste Versionen statt `latest` sind ebenfalls verfügbar, z. B. `ghcr.io/its-sven/fotobox-gallery-server:2.1`. Was sich geändert hat, steht im [Changelog](CHANGELOG.md).
 
-## Regeln für den URL-Namen
+## So funktioniert es
 
-Der **Anzeigename** ist frei wählbar. Der **URL-Name** wird Teil des Links und des Ordnernamens:
-
-- erlaubt sind nur `A–Z`, `a–z`, `0–9`, `-` und `_`, 2 bis 80 Zeichen
-- Leerzeichen und Punkte werden beim Tippen automatisch zu `-`, Umlaute zu `ae/oe/ue/ss`, alles andere wird entfernt (mit Hinweis)
-- der URL-Name wird aus dem Anzeigenamen vorgeschlagen; vergebene und reservierte Namen (`Admin`, `api`, `thumb`, …) werden sofort markiert
-- Groß-/Kleinschreibung spielt beim Aufruf keine Rolle; nachträglich ändern lässt sich der URL-Name nicht
-
-## Vorschaubilder & Leistung
-
-- Kacheln: 480×480 px, Vollansicht: max. 1920 px, jeweils WebP. Downloads und ZIP liefern immer die **Originale**.
-- Neue Fotos werden alle 30 s erkannt und die Vorschaubilder im Hintergrund erzeugt (`PREGENERATE=true`), damit Gäste nicht warten müssen. Anfragen von Gästen haben dabei Vorrang.
-- Vorschaubilder gelöschter Fotos werden automatisch aufgeräumt.
-- Die Galerie zeigt zunächst 60 Bilder und lädt beim Scrollen nach.
-
-## Sicherheit
-
-- Ohne eigenes `ADMIN_PASSWORD` ist der Admin-Login gesperrt.
-- Fehlversuche werden begrenzt: Admin 10, PIN 30 Versuche pro IP in 15 Minuten.
-- Bilder werden nur über die App ausgeliefert (PIN-Prüfung). `/opt/fotobox` **nicht** zusätzlich als Webordner freigeben.
-- Die App läuft im Container nicht als root.
+- **Vorschaubilder:** Kacheln 480 × 480 px, Vollansicht max. 1920 px, jeweils WebP. Downloads und ZIP liefern immer die Originale. Alle 30 Sekunden prüft der Server die Event-Ordner und erzeugt fehlende Vorschaubilder im Hintergrund. Anfragen von Gästen haben dabei Vorrang. Vorschaubilder gelöschter Fotos werden aufgeräumt.
+- **Live-Aktualisierung:** Die Galerie fragt alle 15 Sekunden die Fotoliste ab. Hat sich nichts geändert, antwortet der Server ohne Inhalt (HTTP 304).
+- **„Neu“:** gilt für Fotos, die in den letzten 10 Minuten entstanden sind (gemessen an der Serverzeit, falsch gestellte Handy-Uhren spielen keine Rolle), und für Fotos, die während des Besuchs dazukommen. Die Markierung verschwindet von selbst.
+- **Sicherheit:** Bilder werden nur über die App ausgeliefert, die den PIN prüft. Fehlversuche sind begrenzt (Admin 10, PIN 30 pro IP in 15 Minuten), es gibt eine strenge Content-Security-Policy, und der Container läuft ohne root. `/opt/fotobox` deshalb **nicht** zusätzlich als Webordner freigeben.
+- **Sitzungen** liegen im Arbeitsspeicher: Nach einem Neustart müssen Gäste den PIN erneut eingeben.
 
 ## Fehlerbehebung
 
-**`EACCES: permission denied … /opt/fotobox/config/…` bzw. „Datenordner ist nicht beschreibbar“**
+<details>
+<summary><b>„Datenordner ist nicht beschreibbar“ / <code>EACCES: permission denied</code></b></summary>
+
 Die App darf nicht in den Datenordner schreiben.
-- Prüfen, dass in der `docker-compose.yml` **kein** `user:` steht (ältere Versionen hatten das) und mit `sudo docker compose up -d --build` neu starten – der Container korrigiert die Rechte dann selbst.
-- Hilft das nicht (z. B. bei NFS/SMB-Freigaben): `sudo chown -R 1000:1000 /opt/fotobox` (Zahlen = `PUID:PGID`).
-- **Docker Desktop (Mac/Windows):** Der Ordner muss deinem eigenen Benutzer gehören: `sudo chown -R $(id -u):$(id -g) /opt/fotobox` – oder in der `.env` `DATA_PATH=./fotobox-data` setzen.
+- In der `docker-compose.yml` darf **kein** `user:` stehen – der Container korrigiert die Rechte beim Start selbst.
+- Bei Netzlaufwerken (NFS/SMB): `sudo chown -R 1000:1000 /opt/fotobox` (Zahlen = `PUID:PGID`).
+- **Docker Desktop (Mac/Windows):** Der Ordner muss deinem eigenen Benutzer gehören: `sudo chown -R $(id -u):$(id -g) /opt/fotobox` – oder in der `.env` z. B. `DATA_PATH=./fotobox-data` setzen.
+</details>
 
-**Admin-Login zeigt „deaktiviert“** – `ADMIN_PASSWORD` in der `.env` setzen, dann `sudo docker compose up -d`.
+<details>
+<summary><b>Admin-Login ist „deaktiviert“</b></summary>
 
-**Login/PIN „vergisst“ sich sofort** – Seite läuft ohne HTTPS, aber `COOKIE_SECURE=true`. Entweder HTTPS über den Proxy oder `COOKIE_SECURE=false`.
+`ADMIN_PASSWORD` ist nicht gesetzt oder steht noch auf dem Beispielwert. In der `.env` ändern, dann `sudo docker compose up -d`.
+</details>
 
-**Nach jedem Neustart muss der PIN neu eingegeben werden** – das ist so gewollt: Sitzungen liegen nur im Arbeitsspeicher.
+<details>
+<summary><b>Login oder PIN „vergisst“ sich sofort</b></summary>
 
-**Vorschaubilder sehen falsch aus / Speicherplatz** – `sudo rm -rf /opt/fotobox/cache/*`; sie werden automatisch neu erzeugt.
+Die Seite läuft ohne HTTPS, aber `COOKIE_SECURE=true`. Entweder HTTPS über einen Reverse Proxy einrichten oder `COOKIE_SECURE=false` setzen.
+</details>
 
-**Logs ansehen** – `sudo docker compose logs -f`
+<details>
+<summary><b>Neue Fotos erscheinen nicht</b></summary>
 
----
+- Liegen die Dateien wirklich in `/opt/fotobox/events/<URL-Name>/` (nicht in einem Unterordner)?
+- Ist die Galerie archiviert? Archivierte Galerien sind für Gäste geschlossen.
+- Log prüfen: `sudo docker compose logs -f`
+</details>
 
-## Lokale Entwicklung
+<details>
+<summary><b>Vorschaubilder sehen falsch aus / brauchen zu viel Platz</b></summary>
+
+`sudo rm -rf /opt/fotobox/cache/*` – sie werden automatisch neu erzeugt.
+</details>
+
+## Entwicklung
 
 ```bash
+git clone https://github.com/its-sven/Fotobox-Gallery-Server && cd Fotobox-Gallery-Server
 npm install
-npm run dev                 # http://localhost:3000, Daten in ./data, Admin-Passwort "dev"
-npm run check               # Syntax-Check aller Dateien
-node scripts/gen-test-photos.js data/events/<URL-Name> 100   # Testfotos erzeugen
-scripts/smoke-test.sh http://localhost:3000 dev ./data       # kompletter Funktionstest (nur Testinstanz!)
+npm run dev        # http://localhost:3001 · Daten in ./data · Admin-Passwort "dev"
 ```
 
-Aufbau des Codes und Konventionen: siehe [CLAUDE.md](CLAUDE.md).
+| Befehl | Zweck |
+|---|---|
+| `npm run check` | Syntax-Check aller Dateien |
+| `node scripts/gen-test-photos.js data/events/<URL-Name> 100` | Testfotos erzeugen |
+| `scripts/smoke-test.sh http://localhost:3001 dev ./data` | Kompletter Funktionstest (nur gegen eine Testinstanz!) |
+| `npm run icons` | Favicon und Icons aus `public/img/logo.svg` neu erzeugen |
+| `docker build -t fotobox-gallery .` | Image lokal bauen |
+
+Aufbau, Konventionen und Stolperfallen stehen in [CLAUDE.md](CLAUDE.md). Fehler und Ideen gerne als [Issue](https://github.com/its-sven/Fotobox-Gallery-Server/issues).
+
+## Lizenz
+
+[MIT](LICENSE) © Sven Würth

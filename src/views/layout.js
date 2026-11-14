@@ -70,10 +70,13 @@ export function credit() {
   return html`<footer class="credit">In Unterstützung und mit ❤️ von <a href="${CREDIT_URL}" target="_blank" rel="noopener">${CREDIT_NAME}</a></footer>`;
 }
 
+export const logo = (cls = 'logo') => html`<img class="${cls}" src="/assets/img/logo.svg" alt="" width="64" height="64">`;
+
 /** Kopfbereich. `compact` für Galerie-Ansichten, `actions` rechts oben. */
 export function hero({ eyebrow, title, subtitle, actions, compact = false }) {
   return html`<header class="hero${compact ? ' hero--compact' : ''}">
     <div class="hero__inner">
+      ${compact ? '' : logo('hero__logo')}
       <div class="hero__text">
         ${eyebrow ? html`<span class="eyebrow">${eyebrow}</span>` : ''}
         <h1>${title}</h1>
@@ -101,6 +104,7 @@ export function page({ title, body, scripts = [], bodyClass = '' }) {
 <meta name="theme-color" content="#0f172a">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="stylesheet" href="/assets/css/app.css">
 <title>${esc(title)}</title>
 ${scripts.map((s) => `<script type="module" src="/assets/js/${esc(s)}"></script>`).join('\n')}

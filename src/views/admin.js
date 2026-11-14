@@ -1,5 +1,5 @@
 import { LIMITS } from '../security.js';
-import { hero, html, icon, jsonData, notice, page, seg } from './layout.js';
+import { hero, html, icon, jsonData, logo, notice, page, seg } from './layout.js';
 
 const formatDate = (iso) => new Date(iso).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
@@ -14,6 +14,7 @@ export function loginPage({ error, disabled }) {
   const body = html`
     <main class="center">
       <section class="card card--narrow">
+        ${logo('card__logo')}
         <span class="eyebrow">Admin</span>
         <h1 class="card__headline">Fotobox Verwaltung</h1>
         ${disabled
@@ -144,12 +145,13 @@ function settingsSection({ settings, hasFavicon, flash }) {
       <h3>Favicon</h3>
       ${notice('ok', flash.favicon)}${notice('error', flash.faviconError)}
       <div class="favicon">
-        ${hasFavicon ? html`<img src="/favicon.ico?ts=${Date.now()}" alt="Aktuelles Favicon" width="48" height="48">` : html`<span class="muted">Noch kein Favicon hinterlegt.</span>`}
+        <img src="/favicon.ico?ts=${Date.now()}" alt="Aktuelles Favicon" width="48" height="48">
+        <span class="muted">${hasFavicon ? 'Eigenes Favicon' : 'Standard: Projekt-Logo'}</span>
         <form method="post" action="/Admin/favicon#settings" enctype="multipart/form-data" class="inline-form">
           <input type="file" name="favicon" accept=".ico,image/x-icon,image/vnd.microsoft.icon" required aria-label="Favicon (.ico)">
           <button class="btn">Hochladen</button>
         </form>
-        ${hasFavicon ? html`<form method="post" action="/Admin/favicon/delete#settings" data-confirm="Favicon entfernen?"><button class="btn btn--danger">${icon('trash')}<span>Entfernen</span></button></form>` : ''}
+        ${hasFavicon ? html`<form method="post" action="/Admin/favicon/delete#settings" data-confirm="Eigenes Favicon entfernen und wieder das Projekt-Logo nutzen?"><button class="btn btn--danger">${icon('trash')}<span>Entfernen</span></button></form>` : ''}
       </div>
     </section>`;
 }

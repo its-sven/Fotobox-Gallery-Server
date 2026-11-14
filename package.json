@@ -1,13 +1,21 @@
 {
   "name": "fotobox-gallery-server",
-  "version": "2.0.0",
+  "version": "2.1.0",
+  "description": "Selbst gehostete Foto-Galerie für Fotobox-Events – mit PIN-Schutz, Live-Aktualisierung und Adminbereich.",
   "private": true,
+  "license": "MIT",
+  "author": "Sven Würth (https://svenw.de)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/its-sven/Fotobox-Gallery-Server.git"
+  },
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "DATA_ROOT=./data ADMIN_PASSWORD=dev COOKIE_SECURE=false node --watch server.js",
-    "check": "node --check server.js && for f in src/*.js src/**/*.js public/js/*.js; do node --check \"$f\" || exit 1; done"
+    "dev": "PORT=${PORT:-3001} DATA_ROOT=./data ADMIN_PASSWORD=dev COOKIE_SECURE=false node --watch server.js",
+    "check": "node --check server.js && for f in src/*.js src/**/*.js public/js/*.js scripts/*.js; do node --check \"$f\" || exit 1; done",
+    "icons": "node scripts/build-icons.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
