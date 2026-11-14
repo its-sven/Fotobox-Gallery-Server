@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import express from 'express';
 import session from 'express-session';
+import path from 'node:path';
 import { COOKIE_SECURE, FAVICON_FILE, PUBLIC_DIR, SESSION_SECRET } from './config.js';
 import adminRoutes from './routes/admin.js';
 import mediaRoutes from './routes/media.js';
@@ -26,8 +27,10 @@ export function createApp() {
   app.get('/healthz', (req, res) => res.type('text').send('ok'));
   app.get('/robots.txt', (req, res) => res.type('text').send('User-agent: *\nDisallow: /\n'));
   app.get('/favicon.ico', async (req, res) => {
+    // Eigenes Favicon aus dem Admin, sonst das Projekt-Logo
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     if (await fs.access(FAVICON_FILE).then(() => true, () => false)) return res.sendFile(FAVICON_FILE, { dotfiles: 'allow' });
-    res.status(204).end();
+    res.type('png').sendFile(path.join(PUBLIC_DIR, 'img', 'favicon.png'));
   });
   app.use('/assets', express.static(PUBLIC_DIR, { index: false, maxAge: 0 }));
 

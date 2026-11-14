@@ -1,5 +1,5 @@
 import { PAGE_SIZE } from '../config.js';
-import { hero, html, icon, jsonData, notice, page, seg } from './layout.js';
+import { hero, html, icon, jsonData, logo, notice, page, seg } from './layout.js';
 
 const formatDate = (iso) => new Date(iso).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -26,6 +26,7 @@ export function pinPage({ settings, event, error }) {
   const body = html`
     <main class="center">
       <section class="card card--narrow">
+        ${logo('card__logo')}
         <span class="eyebrow">${settings.siteEyebrow}</span>
         <h1 class="card__headline">${event.title}</h1>
         <p class="muted">Gib den PIN ein, um die Fotos anzusehen und herunterzuladen.</p>
@@ -102,9 +103,9 @@ export function galleryPage({ settings, event }) {
         </div>
       </div>
       <div class="lightbox__stage" id="lb-stage">
-        <button class="lightbox__nav lightbox__nav--prev" id="lb-prev" type="button" aria-label="Vorheriges Foto">${icon('chevronLeft')}</button>
         <img id="lb-img" alt="">
-        <button class="lightbox__nav lightbox__nav--next" id="lb-next" type="button" aria-label="Nächstes Foto">${icon('chevronRight')}</button>
+        <button class="lightbox__nav lightbox__nav--prev" id="lb-prev" type="button" aria-label="Vorheriges Foto"><span class="lightbox__arrow">${icon('chevronLeft')}</span></button>
+        <button class="lightbox__nav lightbox__nav--next" id="lb-next" type="button" aria-label="Nächstes Foto"><span class="lightbox__arrow">${icon('chevronRight')}</span></button>
       </div>
       <div class="lightbox__bottom"><span id="lb-meta"></span></div>
     </dialog>
@@ -116,6 +117,7 @@ export function messagePage({ title, heading, text, home = true }) {
   const body = html`
     <main class="center">
       <section class="card card--narrow">
+        ${logo('card__logo')}
         <h1 class="card__headline">${heading}</h1>
         <p class="muted">${text}</p>
         ${home ? html`<a class="btn btn--primary" href="/">${icon('home')}<span>Zur Startseite</span></a>` : ''}

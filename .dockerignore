@@ -1,6 +1,9 @@
 node_modules
 data
 .git
+.github
 .env
 .claude
+docs
+scripts
 *.md

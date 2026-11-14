@@ -1,18 +1,21 @@
+# Fotobox Galerie – Docker Compose
+# Start:   docker compose up -d
+# Update:  docker compose pull && docker compose up -d
 services:
   fotobox:
-    build: .
-    image: fotobox-gallery:latest
+    image: ghcr.io/its-sven/fotobox-gallery-server:latest
+    # Stattdessen aus dem geklonten Quellcode bauen: nächste Zeile einkommentieren und
+    # "docker compose up -d --build" verwenden.
+    # build: .
     container_name: fotobox-gallery
     restart: unless-stopped
     # Kein "user:" setzen – der Container setzt die Rechte selbst und läuft dann als PUID:PGID.
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     environment:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
       TZ: ${TZ:-Europe/Berlin}
-      PORT: 3000
-      DATA_ROOT: /opt/fotobox
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       SESSION_SECRET: ${SESSION_SECRET:-}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
