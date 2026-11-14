@@ -146,28 +146,18 @@ Die Galerie braucht nur einen Ordner, in dem die Fotos landen. Wie die Fotos dor
 So läuft es bei mir: Die Galerie läuft auf einem Server im Internet unter einer eigenen Domain. Die Fotobox vor Ort ist über einen LTE-Router online und per [Netbird](https://netbird.io) (WireGuard-VPN) mit dem Server verbunden. [Syncthing](https://syncthing.net) spiegelt den Foto-Ordner der Fotobox nach `/opt/fotobox` auf dem Server.
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph event["📍 Vor Ort"]
-        direction TB
-        box["📷 Fotobox<br/>Kamera + PC"]
-        stA["Syncthing<br/>Foto-Ordner der Fotobox"]
-        lte["📶 LTE-Router"]
-        box --> stA
-        stA -.- lte
+        box["📷 Fotobox<br/>Kamera + PC"] --> stA["🔄 Syncthing<br/>Foto-Ordner der Fotobox"]
     end
 
     subgraph server["☁️ Server im Internet"]
-        direction TB
-        stB["Syncthing<br/>/opt/fotobox/events/Sommerfest-2026"]
-        app["🐳 Fotobox Galerie<br/>Docker-Container :3000"]
-        proxy["🔒 Reverse Proxy<br/>HTTPS · fotos.example.com"]
-        stB --> app --> proxy
+        stB["🔄 Syncthing<br/>/opt/fotobox/events/Sommerfest-2026"] --> app["🐳 Fotobox Galerie<br/>Docker-Container :3000"]
+        app --> proxy["🔒 Reverse Proxy · HTTPS<br/>fotos.example.com"]
     end
 
-    guests["📱 Gäste<br/>QR-Code scannen"]
-
-    stA == "Netbird-VPN über LTE" ==> stB
-    guests -- "mobiles Internet" --> proxy
+    stA == "Netbird-VPN über LTE-Router" ==> stB
+    proxy -- "mobiles Internet" --> guests["📱 Gäste<br/>QR-Code scannen"]
 ```
 
 - **Vorteile:** Gäste brauchen kein WLAN, die Galerie bleibt nach dem Event online, keine Portfreigaben am LTE-Router nötig (Netbird verbindet auch hinter CGNAT).
@@ -179,19 +169,13 @@ flowchart LR
 Die Galerie läuft direkt auf dem Fotobox-PC oder auf einem Mini-PC bzw. Raspberry Pi daneben. Die Gäste verbinden sich mit dem WLAN vor Ort und öffnen die Galerie über die lokale Adresse.
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph event["📍 Vor Ort – kein Internet nötig"]
-        direction LR
-        box["📷 Fotobox-PC<br/>speichert Fotos"]
-        folder[("Foto-Ordner<br/>…/events/Sommerfest-2026")]
-        app["🐳 Fotobox Galerie<br/>Docker auf demselben PC<br/>oder Mini-PC / Raspberry Pi"]
-        wifi["📶 WLAN-Router"]
-        guests["📱 Gäste im WLAN<br/>http://192.168.1.10:3000"]
-        tv["📺 Bildschirm<br/>„Neuestes Bild“"]
-        box --> folder --> app
-        app --- wifi
-        guests --> wifi
-        tv --> wifi
+        box["📷 Fotobox-PC<br/>speichert Fotos"] --> folder[("📁 Foto-Ordner<br/>…/events/Sommerfest-2026")]
+        folder --> app["🐳 Fotobox Galerie<br/>auf demselben PC oder Mini-PC / Raspberry Pi"]
+        app --> wifi["📶 WLAN-Router"]
+        wifi --> guests["📱 Gäste im WLAN<br/>http://192.168.1.10:3000"]
+        wifi --> tv["📺 Bildschirm vor Ort<br/>„Neuestes Bild“"]
     end
 ```
 
